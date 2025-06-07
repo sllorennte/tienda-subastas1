@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Detalle de Subasta – Tienda Subastas</title>
+
+  <!-- Google Fonts Inter -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" />
+
+  <!-- Estilos -->
+  <link rel="stylesheet" href="css/producto.css" />
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="index.html" class="logo">
+        <img src="uploads/logo-removebg-preview.png" alt="Tienda Subastas" />
+        <span>Tienda Subastas</span>
+      </a>
+      <nav class="main-nav">
+        <a href="productos.html">Productos</a>
+        <a href="misPujas.html">Mis Pujas</a>
+        <a href="misProductos.html">Mis Productos</a>
+      </nav>
+      <div class="header-actions">
+        <button id="btn-logout"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- BREADCRUMB -->
+  <nav class="breadcrumb container">
+    <a href="index.html">Inicio</a> ›
+    <a href="productos.html">Productos</a> ›
+    <span id="titulo-breadcrumb">Cargando…</span>
+  </nav>
+
+  <!-- DETALLE PRODUCTO -->
+  <main class="container">
+    <section class="product-detail">
+      <!-- GALERÍA -->
+      <aside class="gallery">
+        <div class="main-image" id="imagen-principal"></div>
+        <div class="thumbnails" id="thumbnails"></div>
+      </aside>
+
+      <!-- INFO -->
+      <article class="info">
+        <h1 id="titulo" class="product-title">Cargando título…</h1>
+        <p class="sku">N.º <span id="numero-subasta">00000000</span></p>
+        <div id="estado-subasta" class="status">Cargando estado…</div>
+
+        <div class="price-block">
+          <div class="label">PUJA ACTUAL</div>
+          <div id="puja-actual" class="price">€0.00</div>
+          <div id="precio-reserva" class="reserve">Precio de reserva no alcanzado</div>
+        </div>
+
+        <div class="actions">
+          <form id="form-puja" class="bid-form">
+            <input type="number" id="cantidad" placeholder="€ Tu puja" required />
+            <button type="submit" class="btn primary">Pujar</button>
+            <button type="button" id="btn-max-puja" class="btn secondary">Máx</button>
+            <p id="error-puja" class="form-error"></p>
+          </form>
+        </div>
+
+        <div class="extra-info">
+          <p><i class="fas fa-shield-alt"></i> Tarifa Protección: 9% + €3</p>
+          <p><i class="fas fa-truck"></i> 22 € desde Francia – 6–8 días</p>
+        </div>
+
+        <!-- Contactar vendedor -->
+        <div class="contactar-vendedor">
+          <button id="btn-contactar-vendedor" class="btn-contactar">
+            <i class="fas fa-envelope"></i> Contactar al vendedor
+          </button>
+        </div>
+
+        <section class="lista-pujas-container">
+          <h2>Pujas</h2>
+          <ul id="lista-pujas" class="lista-pujas"></ul>
+        </section>
+      </article>
+    </section>
+
+    <!-- PESTAÑAS: DESCRIPCIÓN / RESEÑAS -->
+    <section class="tabs container">
+      <nav class="tabs-nav">
+        <button data-tab="descripcion" class="active">Descripción</button>
+        <button data-tab="reseñas">Reseñas</button>
+      </nav>
+
+      <div class="tabs-content">
+        <!-- DESCRIPCIÓN -->
+        <div id="descripcion" class="tab-pane active">
+          <p id="descripcion-texto">Cargando descripción…</p>
+        </div>
+
+        <!-- RESEÑAS -->
+        <div id="reseñas" class="tab-pane">
+          <div id="lista-reseñas" class="reviews-list"></div>
+          <form id="form-reseña" class="review-form">
+            <h3>Deja tu reseña</h3>
+            <div class="field">
+              <label for="calificacion">Calificación:</label>
+              <select id="calificacion" required>
+                <option value="">— Selecciona —</option>
+                <option value="1">★☆☆☆☆ (1)</option>
+                <option value="2">★★☆☆☆ (2)</option>
+                <option value="3">★★★☆☆ (3)</option>
+                <option value="4">★★★★☆ (4)</option>
+                <option value="5">★★★★★ (5)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="comentario">Comentario:</label>
+              <textarea id="comentario" rows="4" placeholder="Tu opinión…" required></textarea>
+            </div>
+            <button type="submit" class="btn primary">Enviar reseña</button>
+            <p id="error-reseña" class="form-error"></p>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="container">
+      <p>© 2025 Tienda de Subastas. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+
+  <script src="js/producto.js"></script>
+</body>
+</html>

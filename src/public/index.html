@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Tienda de Subastas - Inicio</title>
+
+  <!-- Google Font Inter -->
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Font Awesome (para iconos de búsqueda, carrito, usuario) -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  />
+
+  <!-- Estilos generales e index-specific -->
+  <link rel="stylesheet" href="css/estilos.css">
+  <link rel="stylesheet" href="css/index.css">
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="main-header">
+    <nav class="nav-left">
+      <a href="productos.html">Productos</a>
+      <a href="misPujas.html">Mis Pujas</a>
+      <a href="misProductos.html">Mis Productos</a>
+    </nav>
+
+    <div class="logo-container">
+      <a href="index.html">
+        <img src="uploads/logo-removebg-preview.png" alt="Logo Biddable" class="logo-img" />
+      </a>
+    </div>
+
+    <div class="nav-right">
+      <button class="icon-btn" id="btn-buscar" title="Buscar">
+        <i class="fas fa-search"></i>
+      </button>
+      <button class="icon-btn" id="btn-mensajes" title="Mensajes" 
+        onclick="location.href='mensajes.html'">
+        <i class="fas fa-envelope"></i>
+      </button>
+
+      <button class="icon-btn" id="btn-mi-cuenta" title="Mi Cuenta" onclick="location.href='miCuenta.html'">
+        <i class="fas fa-user"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    <!-- 1) Galería de productos -->
+    <section class="product-slider">
+      <div class="slider-item">
+        <img src="uploads/imagen1.jpg" alt="Producto 1" class="slider-thumb">
+      </div>
+      <div class="slider-item">
+        <img src="uploads/imagen2.jpg" alt="Producto 2" class="slider-thumb">
+      </div>
+      <div class="slider-item">
+        <img src="uploads/imagen.webp" alt="Producto 3" class="slider-thumb">
+      </div>
+    </section>
+
+    <!-- 2) Área de contenido dinámica -->
+    <section class="content-area">
+      <!-- Aquí inyecta tu buscador, lista y paginación vía JS -->
+    </section>
+  </main>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
