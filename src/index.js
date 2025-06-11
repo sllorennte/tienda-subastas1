@@ -23,8 +23,8 @@ mongoose.connect(
     'mongodb+srv://admin:cD53735F@cluster0.tdsqx.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0',
   { useNewUrlParser: true, useUnifiedTopology: true }
 )
-.then(() => console.log('✔️ MongoDB Atlas conectado'))
-.catch(err => console.error('❌ Error MongoDB Atlas:', err));
+.then(() => console.log('MongoDB Atlas conectado'))
+.catch(err => console.error(' Error MongoDB Atlas:', err));
 
 // Montar rutas bajo /api
 app.use('/api', usuarioRutas);    // /api/usuarios...
