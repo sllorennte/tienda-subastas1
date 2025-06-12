@@ -13,26 +13,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  const contentArea = document.querySelector('.content-area');
-  contentArea.innerHTML = `
-    <section id="busqueda" class="busqueda-contenedor">
-      <div class="busqueda-input-wrapper">
-        <svg class="icono-lupa" xmlns="http://www.w3.org/2000/svg"
-             fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M11 19a8 8 0 100-16 8 8 0 000 16zm6-4l4 4"/>
-        </svg>
-        <input type="text" id="search-input" placeholder="Buscar por título o descripción...">
-      </div>
-      <button id="search-btn">Buscar</button>
-      <button id="btn-mis-productos" style="margin-left: 1rem;">Mis productos</button>
-    </section>
-
-    <section id="lista-productos" class="lista-productos"></section>
-
-    <nav id="paginacion" class="paginacion-nav"></nav>
-  `;
-
   let currentPage = 1;
   const limit = 5;
   let currentSearch = '';
@@ -49,13 +29,16 @@ document.addEventListener('DOMContentLoaded', () => {
       const params = new URLSearchParams({ page: currentPage, limit: limit });
       if (currentSearch) params.set('search', currentSearch);
 
-      // Cambiar URL según si mostrar solo productos propios
-      const url = mostrarSoloMios ? '/api/productos/mios' : `/api/productos?${params.toString()}`;
+      const url = mostrarSoloMios
+        ? '/api/productos/mios'
+        : `/api/productos?${params.toString()}`;
 
       const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` }
       });
+
       if (!res.ok) throw new Error('Error al obtener productos');
+
       const data = await res.json();
       const { metadata, productos } = data;
 
@@ -63,80 +46,66 @@ document.addEventListener('DOMContentLoaded', () => {
       generarPaginacion(metadata);
     } catch (err) {
       console.error(err);
-      alert('No se pudieron cargar los productos.');
+      listaProductos.innerHTML = `
+        <div class="text-center text-danger py-5">
+          <p>No se pudieron cargar los productos.</p>
+        </div>`;
     }
   }
 
   function mostrarProductos(productos) {
     listaProductos.innerHTML = '';
     if (productos.length === 0) {
-      listaProductos.innerHTML = '<p class="sin-productos">No se encontraron productos.</p>';
+      listaProductos.innerHTML = `
+        <div class="text-center text-muted py-5">
+          <p>No se encontraron productos.</p>
+        </div>`;
       return;
     }
 
     productos.forEach(p => {
-      const card = document.createElement('article');
-      card.className = 'producto-card';
+      const primeraImagen = p.imagenes?.[0] || 'uploads/mesa.jpg';
 
-      const primeraImagen = p.imagenes && p.imagenes.length
-        ? p.imagenes[0]
-        : 'uploads/mesa.jpg';
-
+      const card = document.createElement('div');
+      card.className = 'col-md-4';
       card.innerHTML = `
-        <img src="${primeraImagen}" alt="${p.titulo}" class="thumb" />
-        <div class="contenido">
-          <h2>${p.titulo}</h2>
-          <p>${p.descripcion || ''}</p>
-          <p class="precio"><strong>Precio inicial:</strong> €${p.precioInicial}</p>
-          <p class="vendedor"><strong>Vendedor:</strong> ${p.vendedor.username}</p>
-          <a href="producto.html?id=${p._id}">Ver subasta ➔</a>
-        </div>
-      `;
+        <div class="card shadow-sm h-100">
+          <img src="${primeraImagen}" class="card-img-top" alt="${p.titulo}" />
+          <div class="card-body d-flex flex-column">
+            <h5 class="card-title fw-bold">${p.titulo}</h5>
+            <p class="text-muted">${p.descripcion || ''}</p>
+            <p class="fw-semibold mb-1">Precio inicial: €${p.precioInicial}</p>
+            <p class="text-muted mb-2">Vendedor: ${p.vendedor.username}</p>
+            <a href="producto.html?id=${p._id}" class="btn btn-outline-dark mt-auto w-100">Ver subasta</a>
+          </div>
+        </div>`;
       listaProductos.appendChild(card);
     });
   }
 
-  function generarPaginacion({ page, limit, totalPages }) {
+  function generarPaginacion({ page, totalPages }) {
     paginacionNav.innerHTML = '';
 
-    const prevBtn = document.createElement('button');
-    prevBtn.textContent = 'Anterior';
-    prevBtn.disabled = page <= 1;
-    prevBtn.className = 'btn-pagina';
-    prevBtn.addEventListener('click', () => {
-      if (page > 1) {
-        currentPage = page - 1;
-        cargarProductos();
-      }
-    });
-    paginacionNav.appendChild(prevBtn);
-
-    for (let i = 1; i <= totalPages; i++) {
-      const pageBtn = document.createElement('button');
-      pageBtn.textContent = i;
-      pageBtn.className = 'btn-pagina';
-      if (i === page) {
-        pageBtn.disabled = true;
-        pageBtn.classList.add('page-active');
-      }
-      pageBtn.addEventListener('click', () => {
-        currentPage = i;
+    const crearBoton = (texto, pagina, deshabilitado = false, activo = false) => {
+      const btn = document.createElement('button');
+      btn.textContent = texto;
+      btn.className = 'btn btn-sm btn-outline-dark mx-1';
+      if (deshabilitado) btn.disabled = true;
+      if (activo) btn.classList.add('btn-primary', 'text-white');
+      btn.addEventListener('click', () => {
+        currentPage = pagina;
         cargarProductos();
       });
-      paginacionNav.appendChild(pageBtn);
+      return btn;
+    };
+
+    paginacionNav.appendChild(crearBoton('Anterior', page - 1, page <= 1));
+
+    for (let i = 1; i <= totalPages; i++) {
+      paginacionNav.appendChild(crearBoton(i, i, false, i === page));
     }
 
-    const nextBtn = document.createElement('button');
-    nextBtn.textContent = 'Siguiente';
-    nextBtn.disabled = page >= totalPages;
-    nextBtn.className = 'btn-pagina';
-    nextBtn.addEventListener('click', () => {
-      if (page < totalPages) {
-        currentPage = page + 1;
-        cargarProductos();
-      }
-    });
-    paginacionNav.appendChild(nextBtn);
+    paginacionNav.appendChild(crearBoton('Siguiente', page + 1, page >= totalPages));
   }
 
   searchBtn.addEventListener('click', () => {

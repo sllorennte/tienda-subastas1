@@ -34,3 +34,27 @@ exports.responderMensaje = async (req, res) => {
     res.status(500).json({ error: 'Error al responder mensaje' });
   }
 };
+
+exports.crearMensaje = async (req, res) => {
+  try {
+    const remitente = req.user.id;
+    const { destinatario, texto } = req.body;
+
+    if (!destinatario || !texto) {
+      return res.status(400).json({ error: 'Faltan destinatario o texto' });
+    }
+
+    const nuevoMensaje = new Mensaje({
+      remitente,
+      destinatario,
+      texto,
+      fecha: new Date()
+    });
+
+    await nuevoMensaje.save();
+    res.status(201).json(nuevoMensaje);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al enviar el mensaje' });
+  }
+};

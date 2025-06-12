@@ -1,52 +1,64 @@
-// public/js/login.js
+// import { mostrarNotificacion } from './notificacion.js'; // Descomenta si usas el sistema de notificaciones
 
-document.getElementById('form-login').addEventListener('submit', async e => {
-  e.preventDefault();
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('form-login');
+  const usuarioInput = document.getElementById('usuario');
+  const contrasenaInput = document.getElementById('contrasena');
 
-  // Obtener valores de los inputs
-  const usuario = document.getElementById('usuario').value.trim();
-  const contrasena = document.getElementById('contrasena').value;
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
 
-  // Validaciones básicas
-  if (!usuario) {
-    alert('El campo "Usuario" es obligatorio.');
-    return;
-  }
-  if (!contrasena) {
-    alert('El campo "Contraseña" es obligatorio.');
-    return;
-  }
+    const usuario = usuarioInput.value.trim();
+    const contrasena = contrasenaInput.value;
 
-  try {
-    // Hacemos la petición al endpoint de login
-    // Asumimos que "usuario" en el frontend corresponde al campo "email" en el backend
-    const res = await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: usuario, password: contrasena })
-    });
-    const data = await res.json();
-
-    if (!res.ok) {
-      // Mostrar error devuelto por el servidor o mensaje genérico
-      alert(data.error || 'Credenciales incorrectas.');
+    if (!usuario) {
+      // mostrarNotificacion('El campo "Usuario" es obligatorio.', 'warning');
       return;
     }
 
-    // Guardar token y redirigir al listado principal
-    localStorage.setItem('token', data.token);
-    window.location.href = '/';
-  } catch (err) {
-    console.error(err);
-    alert('Error de red o servidor al iniciar sesión.');
-  }
-});
+    if (!contrasena) {
+      // mostrarNotificacion('El campo "Contraseña" es obligatorio.', 'warning');
+      return;
+    }
 
-// Cancelar: limpia los campos o redirige (según preferencia)
-document.querySelector('.cancel').addEventListener('click', () => {
-  // O bien limpiar campos:
-  document.getElementById('usuario').value = '';
-  document.getElementById('contrasena').value = '';
-  // O redirigir a la página de inicio:
-  // window.location.href = '/';
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: usuario, password: contrasena })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        // mostrarNotificacion(data.error || 'Credenciales incorrectas.', 'danger');
+        return;
+      }
+
+      localStorage.setItem('token', data.token);
+
+      const payload = JSON.parse(atob(data.token.split('.')[1]));
+      const rol = payload.rol;
+
+      if (rol === 'admin') {
+        window.location.href = '/index_admin.html';
+      } else if (rol === 'usuario') {
+        window.location.href = '/index.html';
+      } else {
+        window.location.href = '/';
+      }
+
+    } catch (err) {
+      console.error(err);
+      // mostrarNotificacion('Error de red o servidor al iniciar sesión.', 'danger');
+    }
+  });
+
+  const btnCancelar = document.querySelector('.btn-outline-secondary');
+  if (btnCancelar) {
+    btnCancelar.addEventListener('click', () => {
+      usuarioInput.value = '';
+      contrasenaInput.value = '';
+    });
+  }
 });

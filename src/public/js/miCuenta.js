@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
-  // Botón cerrar sesión
+  // Cerrar sesión
   const btnLogout = document.getElementById('btn-logout');
   if (btnLogout) {
     btnLogout.addEventListener('click', () => {
@@ -14,41 +14,33 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Gestión navegación menú lateral
-  const menuBtns = document.querySelectorAll('.menu-btn');
-  const secciones = document.querySelectorAll('.contenido-principal > section');
+  // Navegación entre secciones
+  const menuBtns = document.querySelectorAll('[data-section]');
+  const secciones = document.querySelectorAll('#pujas-activas, #pujas-creadas, #configuracion');
 
-  menuBtns.forEach((btn) => {
+  menuBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-      menuBtns.forEach((b) => b.classList.remove('active'));
+      menuBtns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       const target = btn.dataset.section;
-
-      secciones.forEach((sec) => {
-        if (sec.id === target) {
-          sec.classList.add('seccion-activa');
-          sec.classList.remove('seccion-oculta');
-        } else {
-          sec.classList.remove('seccion-activa');
-          sec.classList.add('seccion-oculta');
-        }
+      secciones.forEach(sec => {
+        sec.classList.toggle('d-none', sec.id !== target);
       });
     });
   });
 
-  // Cargar datos usuario en configuración
+  // Cargar datos del usuario
   async function cargarDatosUsuario() {
     try {
       const res = await fetch('/api/usuarios/me', {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}` }
       });
-      if (!res.ok) throw new Error('No se pudo obtener datos de usuario');
+      if (!res.ok) throw new Error();
       const usuario = await res.json();
       document.getElementById('username-config').value = usuario.username;
       document.getElementById('email-config').value = usuario.email;
     } catch (err) {
-      console.error(err);
-      alert('Error al cargar datos del usuario.');
+      console.error('No se pudo cargar los datos del usuario.');
     }
   }
 
@@ -61,30 +53,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const email = formConfig.email.value.trim();
     const password = formConfig.password.value;
 
-    if (!username || !email) {
-      alert('El nombre de usuario y email son obligatorios.');
-      return;
-    }
+    if (!username || !email) return;
 
     try {
       const res = await fetch('/api/usuarios/me', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ username, email, password: password || undefined }),
+        body: JSON.stringify({ username, email, password: password || undefined })
       });
-      if (!res.ok) {
+
+      if (res.ok) {
+        formConfig.password.value = '';
+      } else {
         const errData = await res.json();
-        alert('Error al actualizar: ' + (errData.error || 'Error desconocido'));
-        return;
+        console.error('Error al actualizar:', errData.error || 'Error desconocido');
       }
-      alert('Datos actualizados correctamente.');
-      formConfig.password.value = ''; // limpiar contraseña
     } catch (err) {
-      console.error(err);
-      alert('Error al actualizar datos.');
+      console.error('Error al actualizar datos.');
     }
   });
 
@@ -92,11 +80,10 @@ document.addEventListener('DOMContentLoaded', () => {
   async function cargarPujasActivas() {
     try {
       const res = await fetch('/api/pujas/mias', {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}` }
       });
-      if (!res.ok) throw new Error('No se pudo obtener las pujas');
+      if (!res.ok) throw new Error();
       const data = await res.json();
-      // Suponemos que la API devuelve un array directamente, si no cambia aquí
       const pujas = Array.isArray(data) ? data : data.pujas || [];
 
       const contenedor = document.getElementById('lista-pujas-activas');
@@ -107,12 +94,9 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      pujas.forEach((puja) => {
-        const estado =
-          puja.producto.estado === 'activo' &&
-          new Date(puja.producto.fechaExpiracion) > new Date()
-            ? 'Activa'
-            : 'Cerrada';
+      pujas.forEach(puja => {
+        const estado = puja.producto.estado === 'activo' && new Date(puja.producto.fechaExpiracion) > new Date()
+          ? 'Activa' : 'Cerrada';
 
         const card = document.createElement('div');
         card.className = 'puja-card';
@@ -122,25 +106,22 @@ document.addEventListener('DOMContentLoaded', () => {
           <p><strong>Precio inicial:</strong> €${puja.producto.precioInicial}</p>
           <p><strong>Mi puja:</strong> €${puja.cantidad}</p>
           <p class="puja-estado-${estado.toLowerCase()}"><strong>Estado:</strong> ${estado}</p>
-          <p><strong>Fecha fin subasta:</strong> ${new Date(
-            puja.producto.fechaExpiracion
-          ).toLocaleString()}</p>
+          <p><strong>Fecha fin subasta:</strong> ${new Date(puja.producto.fechaExpiracion).toLocaleString()}</p>
         `;
         contenedor.appendChild(card);
       });
     } catch (err) {
-      console.error(err);
-      alert('Error al cargar las pujas.');
+      console.error('No se pudieron cargar las pujas activas.');
     }
   }
 
-  // Cargar pujas creadas (subastas que ha creado el usuario)
+  // Cargar pujas creadas
   async function cargarPujasCreadas() {
     try {
       const res = await fetch('/api/productos/mios', {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}` }
       });
-      if (!res.ok) throw new Error('No se pudo obtener las pujas creadas');
+      if (!res.ok) throw new Error();
       const data = await res.json();
       const productos = data.productos || [];
 
@@ -152,11 +133,9 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      productos.forEach((prod) => {
-        const estado =
-          prod.estado === 'activo' && new Date(prod.fechaExpiracion) > new Date()
-            ? 'Activa'
-            : 'Cerrada';
+      productos.forEach(prod => {
+        const estado = prod.estado === 'activo' && new Date(prod.fechaExpiracion) > new Date()
+          ? 'Activa' : 'Cerrada';
 
         const card = document.createElement('div');
         card.className = 'puja-card';
@@ -165,19 +144,16 @@ document.addEventListener('DOMContentLoaded', () => {
           <h3>${prod.titulo}</h3>
           <p><strong>Precio inicial:</strong> €${prod.precioInicial}</p>
           <p class="puja-estado-${estado.toLowerCase()}"><strong>Estado:</strong> ${estado}</p>
-          <p><strong>Fecha fin subasta:</strong> ${new Date(
-            prod.fechaExpiracion
-          ).toLocaleString()}</p>
+          <p><strong>Fecha fin subasta:</strong> ${new Date(prod.fechaExpiracion).toLocaleString()}</p>
         `;
         contenedor.appendChild(card);
       });
     } catch (err) {
-      console.error(err);
-      alert('Error al cargar las pujas creadas.');
+      console.error('No se pudieron cargar las pujas creadas.');
     }
   }
 
-  // Carga inicial
+  // Iniciar carga
   cargarDatosUsuario();
   cargarPujasActivas();
   cargarPujasCreadas();

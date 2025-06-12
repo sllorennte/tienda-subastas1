@@ -2,141 +2,152 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Detalle de Subasta – Tienda Subastas</title>
-
-  <!-- Google Fonts Inter -->
-  <link rel="preconnect" href="https://fonts.gstatic.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" />
-
-  <!-- Estilos -->
+  <title>Detalle de Subasta – Biddable</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link rel="stylesheet" href="css/producto.css" />
+  <link rel="stylesheet" href="css/index.css" />
 </head>
 <body>
-  <!-- HEADER -->
-  <header class="site-header">
-    <div class="container header-inner">
-      <a href="index.html" class="logo">
-        <img src="uploads/logo-removebg-preview.png" alt="Tienda Subastas" />
-        <span>Tienda Subastas</span>
-      </a>
-      <nav class="main-nav">
-        <a href="productos.html">Productos</a>
-        <a href="misPujas.html">Mis Pujas</a>
-        <a href="misProductos.html">Mis Productos</a>
-      </nav>
-      <div class="header-actions">
-        <button id="btn-logout"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</button>
+
+<header class="bg-white border-bottom shadow-sm sticky-top header-grande">
+  <div class="container d-flex align-items-center justify-content-between py-3">
+    <a href="index.html" class="d-flex align-items-center gap-3 text-decoration-none">
+      <img src="uploads/logo-removebg-preview.png" alt="Logo" height="60" />
+      <span class="fw-bold text-dark fs-4">Biddable</span>
+    </a>
+    <nav class="d-flex align-items-center gap-4">
+      <a href="productos.html" class="nav-link">Subastas</a>
+      <a href="misPujas.html" class="nav-link">Mis Pujas</a>
+      <a href="misProductos.html" class="nav-link">Mis Productos</a>
+      <a href="mensajes.html" class="text-dark"><i class="fas fa-envelope fs-5"></i></a>
+      <a href="miCuenta.html" class="text-dark"><i class="fas fa-user fs-5"></i></a>
+    </nav>
+  </div>
+</header>
+
+<nav class="container py-3">
+  <a href="index.html" class="text-decoration-none text-secondary">Inicio</a> &rsaquo;
+  <a href="productos.html" class="text-decoration-none text-secondary">Productos</a> &rsaquo;
+  <span id="titulo-breadcrumb" class="text-dark">Cargando…</span>
+</nav>
+
+<main class="container mb-5">
+  <div class="row g-5">
+    <div class="col-md-6">
+      <div class="bg-white rounded shadow-sm p-3 text-center" style="aspect-ratio: 4 / 3;">
+        <div id="imagen-principal"></div>
       </div>
+      <div id="thumbnails" class="d-flex gap-2 mt-3 overflow-auto"></div>
     </div>
-  </header>
 
-  <!-- BREADCRUMB -->
-  <nav class="breadcrumb container">
-    <a href="index.html">Inicio</a> ›
-    <a href="productos.html">Productos</a> ›
-    <span id="titulo-breadcrumb">Cargando…</span>
-  </nav>
+    <div class="col-md-6">
+      <div class="bg-white rounded shadow-sm p-4">
+        <h1 id="titulo" class="fs-3 fw-bold text-primary">Cargando título…</h1>
+        <p class="text-muted">N.º <span id="numero-subasta">00000000</span></p>
+        <p id="estado-subasta" class="fw-semibold text-info">Cargando estado…</p>
 
-  <!-- DETALLE PRODUCTO -->
-  <main class="container">
-    <section class="product-detail">
-      <!-- GALERÍA -->
-      <aside class="gallery">
-        <div class="main-image" id="imagen-principal"></div>
-        <div class="thumbnails" id="thumbnails"></div>
-      </aside>
-
-      <!-- INFO -->
-      <article class="info">
-        <h1 id="titulo" class="product-title">Cargando título…</h1>
-        <p class="sku">N.º <span id="numero-subasta">00000000</span></p>
-        <div id="estado-subasta" class="status">Cargando estado…</div>
-
-        <div class="price-block">
-          <div class="label">PUJA ACTUAL</div>
-          <div id="puja-actual" class="price">€0.00</div>
-          <div id="precio-reserva" class="reserve">Precio de reserva no alcanzado</div>
+        <div class="mt-3">
+          <p class="text-uppercase small text-muted mb-1">Puja Actual</p>
+          <h2 id="puja-actual" class="text-primary display-5">€0.00</h2>
+          <p id="precio-reserva" class="text-warning small">Precio de reserva no alcanzado</p>
         </div>
 
-        <div class="actions">
-          <form id="form-puja" class="bid-form">
-            <input type="number" id="cantidad" placeholder="€ Tu puja" required />
-            <button type="submit" class="btn primary">Pujar</button>
-            <button type="button" id="btn-max-puja" class="btn secondary">Máx</button>
-            <p id="error-puja" class="form-error"></p>
-          </form>
+        <form id="form-puja" class="d-flex gap-2 align-items-center mt-4">
+          <input type="number" id="cantidad" class="form-control" placeholder="€ Tu puja" required />
+          <button type="submit" class="btn btn-primary">Pujar</button>
+          <button type="button" id="btn-max-puja" class="btn btn-outline-secondary">Máx</button>
+        </form>
+        <p id="error-puja" class="text-danger small mt-2"></p>
+
+        <div class="mt-4 small text-muted">
+          <p><i class="fas fa-shield-alt me-1"></i> Tarifa Protección: 9% + €3</p>
+          <p><i class="fas fa-truck me-1"></i> 22 € desde España – 6–8 días</p>
         </div>
 
-        <div class="extra-info">
-          <p><i class="fas fa-shield-alt"></i> Tarifa Protección: 9% + €3</p>
-          <p><i class="fas fa-truck"></i> 22 € desde Francia – 6–8 días</p>
-        </div>
-
-        <!-- Contactar vendedor -->
-        <div class="contactar-vendedor">
-          <button id="btn-contactar-vendedor" class="btn-contactar">
-            <i class="fas fa-envelope"></i> Contactar al vendedor
+        <div class="mt-4">
+          <button id="btn-contactar-vendedor" class="btn btn-outline-primary w-100">
+            <i class="fas fa-envelope me-2"></i> Contactar al vendedor
           </button>
         </div>
-
-        <section class="lista-pujas-container">
-          <h2>Pujas</h2>
-          <ul id="lista-pujas" class="lista-pujas"></ul>
-        </section>
-      </article>
-    </section>
-
-    <!-- PESTAÑAS: DESCRIPCIÓN / RESEÑAS -->
-    <section class="tabs container">
-      <nav class="tabs-nav">
-        <button data-tab="descripcion" class="active">Descripción</button>
-        <button data-tab="reseñas">Reseñas</button>
-      </nav>
-
-      <div class="tabs-content">
-        <!-- DESCRIPCIÓN -->
-        <div id="descripcion" class="tab-pane active">
-          <p id="descripcion-texto">Cargando descripción…</p>
-        </div>
-
-        <!-- RESEÑAS -->
-        <div id="reseñas" class="tab-pane">
-          <div id="lista-reseñas" class="reviews-list"></div>
-          <form id="form-reseña" class="review-form">
-            <h3>Deja tu reseña</h3>
-            <div class="field">
-              <label for="calificacion">Calificación:</label>
-              <select id="calificacion" required>
-                <option value="">— Selecciona —</option>
-                <option value="1">★☆☆☆☆ (1)</option>
-                <option value="2">★★☆☆☆ (2)</option>
-                <option value="3">★★★☆☆ (3)</option>
-                <option value="4">★★★★☆ (4)</option>
-                <option value="5">★★★★★ (5)</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="comentario">Comentario:</label>
-              <textarea id="comentario" rows="4" placeholder="Tu opinión…" required></textarea>
-            </div>
-            <button type="submit" class="btn primary">Enviar reseña</button>
-            <p id="error-reseña" class="form-error"></p>
-          </form>
-        </div>
       </div>
-    </section>
-  </main>
-
-  <!-- FOOTER -->
-  <footer class="site-footer">
-    <div class="container">
-      <p>© 2025 Tienda de Subastas. Todos los derechos reservados.</p>
     </div>
-  </footer>
+  </div>
 
-  <script src="js/producto.js"></script>
+  <section class="mt-5">
+    <h2 class="h5 text-primary mb-3">Pujas</h2>
+    <ul id="lista-pujas" class="list-group"></ul>
+  </section>
+
+  <section class="mt-5">
+    <ul class="nav nav-tabs" id="tabs">
+      <li class="nav-item">
+        <button class="nav-link active" data-tab="descripcion">Descripción</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" data-tab="reseñas">Reseñas</button>
+      </li>
+    </ul>
+    <div class="tab-content border border-top-0 p-4">
+      <div id="descripcion" class="tab-pane fade show active">
+        <p id="descripcion-texto">Cargando descripción…</p>
+      </div>
+      <div id="reseñas" class="tab-pane fade">
+        <div id="lista-reseñas" class="mb-4"></div>
+        <form id="form-reseña">
+          <h3 class="h6 mb-3">Deja tu reseña</h3>
+          <div class="mb-3">
+            <label for="calificacion" class="form-label">Calificación</label>
+            <select id="calificacion" class="form-select" required>
+              <option value="">— Selecciona —</option>
+              <option value="1">★☆☆☆☆ (1)</option>
+              <option value="2">★★☆☆☆ (2)</option>
+              <option value="3">★★★☆☆ (3)</option>
+              <option value="4">★★★★☆ (4)</option>
+              <option value="5">★★★★★ (5)</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="comentario" class="form-label">Comentario</label>
+            <textarea id="comentario" rows="4" class="form-control" required placeholder="Tu opinión…"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Enviar reseña</button>
+          <p id="error-reseña" class="text-danger small mt-2"></p>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Modal para mensaje al vendedor -->
+<div class="modal fade" id="modalMensaje" tabindex="-1" aria-labelledby="modalMensajeLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalMensajeLabel">Enviar mensaje al vendedor</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <textarea id="mensajeTexto" class="form-control" rows="4" placeholder="Escribe tu mensaje..."></textarea>
+        <div id="mensajeError" class="text-danger small mt-2"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" id="btnEnviarMensaje" class="btn btn-primary">Enviar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="notificacion-container" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100;"></div>
+<script src="js/notificacion.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<footer class="text-center py-4 text-muted border-top mt-5">
+  <small>&copy; 2025 Biddable. Todos los derechos reservados.</small>
+</footer>
+<script src="js/producto.js"></script>
 </body>
 </html>

@@ -1,98 +1,100 @@
-// public/js/producto.js
-
 document.addEventListener('DOMContentLoaded', async () => {
-  // 1) Verificar token o redirigir
   const token = localStorage.getItem('token');
   if (!token) {
     window.location.href = '/login.html';
     return;
   }
 
-  // 2) Cerrar sesión
-  const btnLogout = document.getElementById('btn-logout');
-  if (btnLogout) {
-    btnLogout.addEventListener('click', () => {
-      localStorage.removeItem('token');
-      window.location.href = '/login.html';
-    });
-  }
-
-  // 3) User ID desde el payload JWT
   const payload = JSON.parse(atob(token.split('.')[1]));
   const userId = payload.id;
 
-  // 4) ID de producto en la query string
   const params = new URLSearchParams(window.location.search);
   const id = params.get('id');
   if (!id) {
-    alert('ID de producto no especificado');
+    document.body.innerHTML = '<p class="text-danger text-center mt-5">ID de producto no especificado.</p>';
     return;
   }
 
-  // ————————————————————————————————————— DOM ELEMENTS —————————————————————————————————————
-  const tituloEl           = document.getElementById('titulo');
-  const breadcrumbEl       = document.getElementById('titulo-breadcrumb');
-  const descripcionTextEl  = document.getElementById('descripcion-texto');
-  const estadoEl           = document.getElementById('estado-subasta');
-  const pujaActualEl       = document.getElementById('puja-actual');
-  const precioReservaEl    = document.getElementById('precio-reserva');
-  const listaPujasUl       = document.getElementById('lista-pujas');
+  const tituloEl = document.getElementById('titulo');
+  const breadcrumbEl = document.getElementById('titulo-breadcrumb');
+  const descripcionTextEl = document.getElementById('descripcion-texto');
+  const estadoEl = document.getElementById('estado-subasta');
+  const pujaActualEl = document.getElementById('puja-actual');
+  const precioReservaEl = document.getElementById('precio-reserva');
+  const listaPujasUl = document.getElementById('lista-pujas');
 
-  const formPuja           = document.getElementById('form-puja');
-  const inputCantidad      = document.getElementById('cantidad');
-  const btnMaxPuja         = document.getElementById('btn-max-puja');
-  const errorPujaEl        = document.getElementById('error-puja');
+  const formPuja = document.getElementById('form-puja');
+  const inputCantidad = document.getElementById('cantidad');
+  const btnMaxPuja = document.getElementById('btn-max-puja');
+  const errorPujaEl = document.getElementById('error-puja');
 
-  const imagenPrincipalEl  = document.getElementById('imagen-principal');
-  const thumbnailsEl       = document.getElementById('thumbnails');
+  const imagenPrincipalEl = document.getElementById('imagen-principal');
+  const thumbnailsEl = document.getElementById('thumbnails');
 
-  const listaResenasDiv    = document.getElementById('lista-reseñas');
-  const formResena         = document.getElementById('form-reseña');
+  const listaResenasDiv = document.getElementById('lista-reseñas');
+  const formResena = document.getElementById('form-reseña');
   const selectCalificacion = document.getElementById('calificacion');
   const textareaComentario = document.getElementById('comentario');
-  const errorResenaEl      = document.getElementById('error-reseña');
+  const errorResenaEl = document.getElementById('error-reseña');
 
-  const tabButtons = document.querySelectorAll('.tabs-nav button[data-tab]');
-  const tabPanes   = document.querySelectorAll('.tab-pane');
+  const tabButtons = document.querySelectorAll('.nav-link[data-tab]');
+  const tabPanes = document.querySelectorAll('.tab-pane');
   const btnContactar = document.getElementById('btn-contactar-vendedor');
 
-  // 5) Lógica de pestañas
+  // Notificación (import manual)
+  function mostrarNotificacion(mensaje, tipo = 'success') {
+    const contenedor = document.getElementById('notificacion-container');
+    const id = 'toast-' + Date.now();
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center text-bg-${tipo} border-0 show`;
+    toast.id = id;
+    toast.setAttribute('role', 'alert');
+    toast.setAttribute('aria-live', 'assertive');
+    toast.setAttribute('aria-atomic', 'true');
+    toast.innerHTML = `
+      <div class="d-flex">
+        <div class="toast-body">${mensaje}</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+      </div>
+    `;
+    contenedor.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+  }
+
   tabButtons.forEach(btn => {
     btn.addEventListener('click', () => {
       tabButtons.forEach(b => b.classList.remove('active'));
-      tabPanes.forEach(p => p.classList.remove('active'));
+      tabPanes.forEach(p => p.classList.remove('show', 'active'));
       btn.classList.add('active');
-      document.getElementById(btn.dataset.tab).classList.add('active');
+      document.getElementById(btn.dataset.tab).classList.add('show', 'active');
     });
   });
 
   let producto = null;
-  let pujas     = [];
+  let pujas = [];
 
-  // 6) Mostrar galería
   function showGallery(images) {
     imagenPrincipalEl.innerHTML = '';
-    thumbnailsEl.innerHTML      = '';
+    thumbnailsEl.innerHTML = '';
 
     if (!images || images.length === 0) {
-      const noImg = document.createElement('div');
-      noImg.textContent = 'Sin imagen';
-      noImg.style.color = '#666';
-      noImg.style.padding = '2rem';
-      imagenPrincipalEl.appendChild(noImg);
+      imagenPrincipalEl.textContent = 'Sin imagen';
       return;
     }
 
     const mainImg = document.createElement('img');
-    mainImg.src   = images[0];
-    mainImg.alt   = producto.titulo;
+    mainImg.src = images[0];
+    mainImg.alt = producto.titulo;
+    mainImg.classList.add('img-fluid');
     imagenPrincipalEl.appendChild(mainImg);
 
     images.forEach((url, idx) => {
       const thumb = document.createElement('img');
-      thumb.src   = url;
-      thumb.alt   = `${producto.titulo} miniatura`;
+      thumb.src = url;
+      thumb.alt = `Miniatura ${idx + 1}`;
+      thumb.classList.add('img-thumbnail');
       if (idx === 0) thumb.classList.add('active');
+      thumb.style.cursor = 'pointer';
       thumb.addEventListener('click', () => {
         mainImg.src = url;
         thumbnailsEl.querySelectorAll('img').forEach(i => i.classList.remove('active'));
@@ -102,12 +104,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // 7) Actualizar cuenta atrás
   function updateTime() {
     if (!producto) return;
-    const fin   = new Date(producto.fechaExpiracion);
-    const now   = new Date();
-    const diff  = fin - now;
+    const fin = new Date(producto.fechaExpiracion);
+    const now = new Date();
+    const diff = fin - now;
     if (diff <= 0) {
       estadoEl.textContent = 'Subasta cerrada';
       return;
@@ -119,60 +120,105 @@ document.addEventListener('DOMContentLoaded', async () => {
     estadoEl.textContent = `Cierra en ${d}d ${h}h ${m}m ${s}s`;
   }
 
-  // 8) Cargar datos del producto
   async function loadProduct() {
     try {
       const res = await fetch(`/api/productos/${id}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` }
       });
       if (!res.ok) throw new Error();
       producto = await res.json();
 
-      // Rellenar UI
-      tituloEl.textContent          = producto.titulo;
+      tituloEl.textContent = producto.titulo;
       if (breadcrumbEl) breadcrumbEl.textContent = producto.titulo;
       descripcionTextEl.textContent = producto.descripcion || '';
       showGallery(producto.imagenes);
       updateTime();
       setInterval(updateTime, 1000);
 
-      // Contactar por email
-      if (btnContactar && producto.vendedor?.email) {
-        btnContactar.addEventListener('click', () => {
-          const subj = encodeURIComponent(`Consulta sobre "${producto.titulo}"`);
-          window.location.href = `mailto:${producto.vendedor.email}?subject=${subj}`;
+      if (btnContactar && producto.vendedor?._id) {
+        btnContactar.addEventListener('click', async () => {
+          const contenido = `
+            <form id="form-contacto" class="p-2">
+              <textarea id="mensaje-contacto" class="form-control mb-3" placeholder="Escribe tu mensaje..." rows="4"></textarea>
+              <button type="submit" class="btn btn-primary w-100">Enviar mensaje</button>
+            </form>
+          `;
+          const modal = document.createElement('div');
+          modal.className = 'modal fade';
+          modal.innerHTML = `
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">Mensaje al vendedor</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">${contenido}</div>
+              </div>
+            </div>
+          `;
+          document.body.appendChild(modal);
+          const bsModal = new bootstrap.Modal(modal);
+          bsModal.show();
+
+          modal.querySelector('#form-contacto').addEventListener('submit', async e => {
+            e.preventDefault();
+            const texto = modal.querySelector('#mensaje-contacto').value.trim();
+            if (!texto) return;
+
+            try {
+              const res = await fetch('/api/mensajes', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                  destinatario: producto.vendedor._id,
+                  texto
+                })
+              });
+
+              const data = await res.json();
+              if (!res.ok) {
+                mostrarNotificacion(data.error || 'Error al enviar mensaje', 'danger');
+                return;
+              }
+
+              mostrarNotificacion('Mensaje enviado correctamente');
+              bsModal.hide();
+              modal.remove();
+            } catch (err) {
+              console.error(err);
+              mostrarNotificacion('Error al contactar al vendedor', 'danger');
+            }
+          });
         });
       }
     } catch (err) {
-      alert('No se pudo cargar el producto.');
+      document.body.innerHTML = '<p class="text-danger text-center mt-5">Error al cargar el producto.</p>';
       console.error(err);
     }
   }
 
-  // 9) Cargar pujas
   async function loadPujas() {
     try {
       const res = await fetch(`/api/pujas?producto=${id}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` }
       });
       if (!res.ok) throw new Error();
       pujas = await res.json();
 
-      // Lista
       listaPujasUl.innerHTML = '';
       pujas.forEach(p => {
+        const nombreUsuario = p.pujador?.username || 'Usuario desconocido';
         const li = document.createElement('li');
-        li.textContent = `€${p.cantidad.toFixed(2)} – ${p.pujador.username} (${new Date(p.fechaPuja).toLocaleString()})`;
+        li.className = 'list-group-item';
+        li.textContent = `€${p.cantidad.toFixed(2)} – ${nombreUsuario} (${new Date(p.fechaPuja).toLocaleString()})`;
         listaPujasUl.appendChild(li);
       });
 
-      // Monto actual
-      if (pujas.length) {
-        const max = Math.max(...pujas.map(p => p.cantidad));
-        pujaActualEl.textContent = `€ ${max.toFixed(2)}`;
-      } else {
-        pujaActualEl.textContent = `€ ${producto.precioInicial.toFixed(2)}`;
-      }
+      const max = pujas.length ? Math.max(...pujas.map(p => p.cantidad)) : producto.precioInicial;
+      pujaActualEl.textContent = `€ ${max.toFixed(2)}`;
     } catch {
       if (producto) {
         pujaActualEl.textContent = `€ ${producto.precioInicial.toFixed(2)}`;
@@ -180,20 +226,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // 10) Enviar nueva puja
   formPuja.addEventListener('submit', async e => {
     e.preventDefault();
     errorPujaEl.textContent = '';
 
     const val = parseFloat(inputCantidad.value);
-    if (!val || val <= 0) {
-      errorPujaEl.textContent = 'Ingresa una cantidad válida.';
-      return;
-    }
-    const max = pujas.length
-      ? Math.max(...pujas.map(p => p.cantidad))
-      : producto.precioInicial;
-    if (val <= max) {
+    const max = pujas.length ? Math.max(...pujas.map(p => p.cantidad)) : producto.precioInicial;
+
+    if (!val || val <= max) {
       errorPujaEl.textContent = `La puja debe ser > €${max.toFixed(2)}.`;
       return;
     }
@@ -203,71 +243,67 @@ document.addEventListener('DOMContentLoaded', async () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({ producto: id, pujador: userId, cantidad: val })
       });
-      const js = await resp.json();
-      if (!resp.ok) throw new Error(js.error || 'Error al pujar.');
+      if (!resp.ok) throw new Error('Error al enviar puja');
       inputCantidad.value = '';
+      mostrarNotificacion('Puja realizada con éxito');
       await loadPujas();
     } catch (err) {
       errorPujaEl.textContent = err.message;
     }
   });
 
-  // 11) Botón “Máx”
   btnMaxPuja.addEventListener('click', () => {
-    const max = pujas.length
-      ? Math.max(...pujas.map(p => p.cantidad))
-      : producto.precioInicial;
+    const max = pujas.length ? Math.max(...pujas.map(p => p.cantidad)) : producto.precioInicial;
     inputCantidad.value = (max + 1).toFixed(2);
     errorPujaEl.textContent = '';
   });
 
-  // 12) Cargar reseñas
   async function loadResenas() {
     try {
       const res = await fetch(`/api/resenas?producto=${id}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` }
       });
       if (!res.ok) throw new Error();
       const arr = await res.json();
 
       listaResenasDiv.innerHTML = '';
       if (!arr.length) {
-        listaResenasDiv.innerHTML = '<p class="sin-reseñas">Aún no hay reseñas.</p>';
+        listaResenasDiv.innerHTML = '<p class="text-muted">Aún no hay reseñas.</p>';
         return;
       }
 
       arr.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
       arr.forEach(r => {
         const card = document.createElement('div');
-        card.className = 'reseña-card';
+        card.className = 'mb-3 p-3 border rounded bg-light';
         const fecha = new Date(r.fecha).toLocaleString('es-ES');
-        const stars = '★★★★★'.slice(0, r.calificacion) + '☆☆☆☆☆'.slice(r.calificacion);
+        const stars = '★'.repeat(r.calificacion) + '☆'.repeat(5 - r.calificacion);
         card.innerHTML = `
-          <div class="reseña-header">
-            <strong class="usuario">${r.usuario.username}</strong>
-            <span class="reseña-rating">${stars}</span>
+          <div class="d-flex justify-content-between mb-2">
+            <strong>${r.usuario?.username || 'Usuario'}</strong>
+            <span class="text-warning">${stars}</span>
           </div>
-          <p class="reseña-comentario">${r.comentario}</p>
-          <div class="reseña-fecha">${fecha}</div>
+          <p class="mb-1">${r.comentario}</p>
+          <small class="text-muted">${fecha}</small>
         `;
         listaResenasDiv.appendChild(card);
       });
     } catch {
-      listaResenasDiv.innerHTML = '<p class="texto-error">Error al cargar reseñas.</p>';
+      listaResenasDiv.innerHTML = '<p class="text-danger">Error al cargar reseñas.</p>';
     }
   }
 
-  // 13) Enviar nueva reseña
   formResena.addEventListener('submit', async e => {
     e.preventDefault();
     errorResenaEl.textContent = '';
 
     const cal = parseInt(selectCalificacion.value);
     const com = textareaComentario.value.trim();
+
     if (!cal || cal < 1 || cal > 5) {
       errorResenaEl.textContent = 'Selecciona una calificación válida.';
       return;
@@ -282,21 +318,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({ producto: id, calificacion: cal, comentario: com })
       });
-      const js = await resp.json();
-      if (!resp.ok) throw new Error(js.error || 'Error al enviar reseña.');
+      if (!resp.ok) throw new Error('Error al enviar reseña');
       selectCalificacion.value = '';
       textareaComentario.value = '';
+      mostrarNotificacion('Reseña enviada correctamente');
       await loadResenas();
     } catch (err) {
       errorResenaEl.textContent = err.message;
     }
   });
 
-  // 14) Inicializar todo
   await loadProduct();
   await loadPujas();
   await loadResenas();

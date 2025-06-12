@@ -3,7 +3,9 @@ const Producto = require('../modelos/Producto');
 
 exports.crearPuja = async (req, res) => {
   try {
-    const { producto: productoId, pujador, cantidad } = req.body;
+    const { producto: productoId, cantidad } = req.body;
+    const pujador = req.user.id;  // <-- sacar del token
+
     const producto = await Producto.findById(productoId);
     if (!producto) 
       return res.status(404).json({ error: 'Producto no encontrado' });

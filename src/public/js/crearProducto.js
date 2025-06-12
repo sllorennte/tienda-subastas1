@@ -1,56 +1,54 @@
-// ./public/js/crearProducto.js
+// js/crearProducto.js
+import { mostrarNotificacion } from './notificacion.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Verificar token o redirigir al login
   const token = localStorage.getItem('token');
   if (!token) {
     window.location.href = '/login.html';
     return;
   }
 
-  // Obtener ID de usuario desde el payload del token
   const payload = JSON.parse(atob(token.split('.')[1]));
   const userId = payload.id;
 
   const form = document.getElementById('form-crear-producto');
-  const errorContainer = document.getElementById('error');
 
   form.addEventListener('submit', async e => {
     e.preventDefault();
-    errorContainer.textContent = ''; // limpiar mensajes previos
 
-    // 1. Recoger valores del formulario
     const titulo = document.getElementById('titulo').value.trim();
     const descripcion = document.getElementById('descripcion').value.trim();
     const precioInicialRaw = document.getElementById('precioInicial').value;
     const imagenesRaw = document.getElementById('imagenes').value.trim();
     const fechaExpiracionRaw = document.getElementById('fechaExpiracion').value;
 
-    // 2. Validar campos obligatorios
     if (!titulo) {
-      errorContainer.textContent = 'El campo "Título" es obligatorio.';
-      return;
-    }
-    if (!precioInicialRaw) {
-      errorContainer.textContent = 'Debes indicar un "Precio inicial".';
-      return;
-    }
-    const precioInicial = parseFloat(precioInicialRaw);
-    if (isNaN(precioInicial) || precioInicial < 0) {
-      errorContainer.textContent = 'El "Precio inicial" debe ser un número positivo.';
-      return;
-    }
-    if (!fechaExpiracionRaw) {
-      errorContainer.textContent = 'La "Fecha de expiración" es obligatoria.';
-      return;
-    }
-    const fechaExpiracion = new Date(fechaExpiracionRaw);
-    if (isNaN(fechaExpiracion.getTime()) || fechaExpiracion <= new Date()) {
-      errorContainer.textContent = 'La "Fecha de expiración" debe ser una fecha válida y futura.';
+      mostrarNotificacion('El campo "Título" es obligatorio.', 'warning');
       return;
     }
 
-    // 3. Preparar array de nombres de imágenes
+    if (!precioInicialRaw) {
+      mostrarNotificacion('Debes indicar un "Precio inicial".', 'warning');
+      return;
+    }
+
+    const precioInicial = parseFloat(precioInicialRaw);
+    if (isNaN(precioInicial) || precioInicial < 0) {
+      mostrarNotificacion('El "Precio inicial" debe ser un número positivo.', 'warning');
+      return;
+    }
+
+    if (!fechaExpiracionRaw) {
+      mostrarNotificacion('La "Fecha de expiración" es obligatoria.', 'warning');
+      return;
+    }
+
+    const fechaExpiracion = new Date(fechaExpiracionRaw);
+    if (isNaN(fechaExpiracion.getTime()) || fechaExpiracion <= new Date()) {
+      mostrarNotificacion('La "Fecha de expiración" debe ser una fecha válida y futura.', 'warning');
+      return;
+    }
+
     let imagenes = [];
     if (imagenesRaw) {
       imagenes = imagenesRaw
@@ -58,27 +56,22 @@ document.addEventListener('DOMContentLoaded', () => {
         .map(nombre => nombre.trim())
         .filter(nombre => nombre);
 
-      // Validar extensiones (jpg, jpeg, png, gif)
-      const invalidas = imagenes.filter(nombre => {
-        return !/\.(jpe?g|png|gif)$/i.test(nombre);
-      });
+      const invalidas = imagenes.filter(nombre => !/\.(jpe?g|png|gif)$/i.test(nombre));
       if (invalidas.length) {
-        errorContainer.textContent = `Estos nombres no son válidos (deben terminar en .jpg, .png o .gif): ${invalidas.join(', ')}`;
+        mostrarNotificacion(`Estos nombres no son válidos (deben terminar en .jpg, .png o .gif): ${invalidas.join(', ')}`, 'warning');
         return;
       }
     }
 
-    // 4. Formar el payload JSON
     const payloadBody = {
       titulo,
       descripcion,
       precioInicial,
-      imagenes: imagenesRaw,    // el back convertirá a array y a rutas /uploads/...
+      imagenes: imagenesRaw,
       vendedor: userId,
       fechaExpiracion: fechaExpiracion.toISOString()
     };
 
-    // 5. Enviar petición a la API
     try {
       const res = await fetch('/api/productos', {
         method: 'POST',
@@ -88,18 +81,19 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         body: JSON.stringify(payloadBody)
       });
+
       const data = await res.json();
 
       if (!res.ok) {
-        errorContainer.textContent = data.error || 'Error desconocido al crear el producto.';
+        mostrarNotificacion(data.error || 'Error desconocido al crear el producto.', 'danger');
         return;
       }
 
-      alert('Producto creado con éxito');
+      mostrarNotificacion('Producto creado con éxito', 'success');
       window.location.href = '/';
     } catch (err) {
       console.error(err);
-      errorContainer.textContent = 'Error de red o servidor, inténtalo de nuevo.';
+      mostrarNotificacion('Error de red o servidor, inténtalo de nuevo.', 'danger');
     }
   });
 });

@@ -4,17 +4,44 @@ const jwt     = require('jsonwebtoken');
 
 exports.crearUsuario = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, email, password, rol = 'usuario' } = req.body;
+
     if (!username || !email || !password) {
-      return res.status(400).json({ error: 'Todos los campos (username, email, password) son obligatorios.' });
+      return res.status(400).json({ error: 'Todos los campos son obligatorios.' });
     }
-    // Aquí añadirías hash y guardado, omito para brevedad
+
+    const existe = await Usuario.findOne({ $or: [{ email }, { username }] });
+    if (existe) {
+      return res.status(400).json({ error: 'El usuario o email ya está en uso.' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashed = await bcrypt.hash(password, salt);
+
+    const nuevoUsuario = new Usuario({
+      username,
+      email,
+      password: hashed,
+      rol
+    });
+
+    await nuevoUsuario.save();
+
+    // Generar token automáticamente al registrarse
+    const payload = {
+      id: nuevoUsuario._id,
+      username: nuevoUsuario.username,
+      rol: nuevoUsuario.rol
+    };
+
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRES_IN || '2h'
+    });
+
+    res.status(201).json({ mensaje: 'Usuario creado', token });
+
   } catch (err) {
     console.error(err);
-    if (err.code === 11000) {
-      const campo = Object.keys(err.keyValue)[0];
-      return res.status(400).json({ error: `El ${campo} ya está en uso.` });
-    }
     res.status(500).json({ error: 'Error interno al crear usuario.' });
   }
 };
@@ -70,27 +97,35 @@ exports.eliminarUsuario = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
+
     const usuario = await Usuario.findOne({ email });
-    if (!usuario)
+    if (!usuario) {
       return res.status(400).json({ error: 'Credenciales incorrectas' });
+    }
 
     const isMatch = await bcrypt.compare(password, usuario.password);
-    if (!isMatch)
+    if (!isMatch) {
       return res.status(400).json({ error: 'Credenciales incorrectas' });
+    }
 
-    const payload = { id: usuario._id, username: usuario.username };
+    const payload = {
+      id: usuario._id,
+      username: usuario.username,
+      rol: usuario.rol
+    };
+
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRES_IN
+      expiresIn: process.env.JWT_EXPIRES_IN || '2h'
     });
 
     res.json({ mensaje: 'Login exitoso', token });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error en el servidor' });
   }
 };
 
-// NUEVA función para ruta /usuarios/me (usuario autenticado)
 exports.obtenerUsuarioActual = async (req, res) => {
   try {
     const usuario = await Usuario.findById(req.user.id).select('-password');
