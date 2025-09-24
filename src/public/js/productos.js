@@ -75,29 +75,34 @@ document.addEventListener('DOMContentLoaded', () => {
         ? p.imagenes[0]
         : 'css/placeholder.png';
 
-      const fechaExpStr = new Date(p.fechaExpiracion).toLocaleDateString('es-ES', {
+      const fechaExp = new Date(p.fechaExpiracion);
+      const fechaExpStr = fechaExp.toLocaleDateString('es-ES', {
         day: '2-digit', month: '2-digit', year: 'numeric'
       });
 
-      const col = document.createElement('div');
-      col.className = 'col-md-4';
+      const card = document.createElement('article');
+      card.className = 'product-card';
 
-      col.innerHTML = `
-        <div class="card h-100 shadow-sm">
-          <img src="${imagen}" class="card-img-top" alt="${p.titulo}">
-          <div class="card-body d-flex flex-column">
-            <h5 class="card-title text-primary">${p.titulo}</h5>
-            <p class="card-text text-muted">${p.descripcion || ''}</p>
-            <ul class="list-unstyled small mb-3">
-              <li><strong>Precio inicial:</strong> €${p.precioInicial.toFixed(2)}</li>
-              <li><strong>Categoría:</strong> ${p.categoria || '—'}</li>
-              <li><strong>Caduca:</strong> ${fechaExpStr}</li>
-            </ul>
-            <a href="producto.html?id=${p._id}" class="btn btn-outline-primary mt-auto">Ver subasta</a>
+      card.innerHTML = `
+        <div class="product-card__media">
+          <img src="${imagen}" alt="${p.titulo}">
+        </div>
+        <div class="product-card__body">
+          <h3>${p.titulo}</h3>
+          <p>${p.descripcion ? p.descripcion : 'Sin descripción disponible.'}</p>
+          <div class="product-card__meta">
+            <span><strong>Inicial:</strong> €${Number(p.precioInicial).toFixed(2)}</span>
+            <span><strong>Caduca:</strong> ${fechaExpStr}</span>
+            <span><strong>Categoría:</strong> ${p.categoria || '—'}</span>
+            <span><strong>Pujas:</strong> ${Array.isArray(p.pujas) ? p.pujas.length : 0}</span>
+          </div>
+          <div class="product-card__actions">
+            <a href="producto.html?id=${p._id}" class="btn btn-primary">Ver detalles de la subasta</a>
           </div>
         </div>
       `;
-      listaProductos.appendChild(col);
+
+      listaProductos.appendChild(card);
     });
   }
 
