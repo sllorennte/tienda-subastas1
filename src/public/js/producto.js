@@ -37,8 +37,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const textareaComentario = document.getElementById('comentario');
   const errorResenaEl = document.getElementById('error-reseña');
 
-  const tabButtons = document.querySelectorAll('.nav-link[data-tab]');
-  const tabPanes = document.querySelectorAll('.tab-pane');
+  const tabButtons = document.querySelectorAll('.product-tab');
+  const tabPanes = document.querySelectorAll('.product-panel');
   const btnContactar = document.getElementById('btn-contactar-vendedor');
 
   // Notificación (import manual)
@@ -63,10 +63,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   tabButtons.forEach(btn => {
     btn.addEventListener('click', () => {
+      const targetId = btn.dataset.tab;
       tabButtons.forEach(b => b.classList.remove('active'));
-      tabPanes.forEach(p => p.classList.remove('show', 'active'));
+      tabPanes.forEach(p => p.classList.remove('active'));
       btn.classList.add('active');
-      document.getElementById(btn.dataset.tab).classList.add('show', 'active');
+      const panel = document.getElementById(targetId);
+      if (panel) panel.classList.add('active');
     });
   });
 
@@ -85,16 +87,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     const mainImg = document.createElement('img');
     mainImg.src = images[0];
     mainImg.alt = producto.titulo;
-    mainImg.classList.add('img-fluid');
+    mainImg.classList.add('product-main-image');
     imagenPrincipalEl.appendChild(mainImg);
 
     images.forEach((url, idx) => {
       const thumb = document.createElement('img');
       thumb.src = url;
       thumb.alt = `Miniatura ${idx + 1}`;
-      thumb.classList.add('img-thumbnail');
+      thumb.classList.add('product-thumb');
       if (idx === 0) thumb.classList.add('active');
-      thumb.style.cursor = 'pointer';
       thumb.addEventListener('click', () => {
         mainImg.src = url;
         thumbnailsEl.querySelectorAll('img').forEach(i => i.classList.remove('active'));
@@ -212,8 +213,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       pujas.forEach(p => {
         const nombreUsuario = p.pujador?.username || 'Usuario desconocido';
         const li = document.createElement('li');
-        li.className = 'list-group-item';
-        li.textContent = `€${p.cantidad.toFixed(2)} – ${nombreUsuario} (${new Date(p.fechaPuja).toLocaleString()})`;
+        li.className = 'bids-timeline__item';
+        const fecha = new Date(p.fechaPuja).toLocaleString();
+        li.innerHTML = `
+          <div class="bid-amount">€${p.cantidad.toFixed(2)}</div>
+          <div class="bid-meta">
+            <span>${nombreUsuario}</span>
+            <small>${fecha}</small>
+          </div>
+        `;
         listaPujasUl.appendChild(li);
       });
 
@@ -272,28 +280,28 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       listaResenasDiv.innerHTML = '';
       if (!arr.length) {
-        listaResenasDiv.innerHTML = '<p class="text-muted">Aún no hay reseñas.</p>';
+        listaResenasDiv.innerHTML = '<p class="reviews-empty">Aún no hay reseñas.</p>';
         return;
       }
 
       arr.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
       arr.forEach(r => {
-        const card = document.createElement('div');
-        card.className = 'mb-3 p-3 border rounded bg-light';
+        const card = document.createElement('article');
+        card.className = 'review-card';
         const fecha = new Date(r.fecha).toLocaleString('es-ES');
         const stars = '★'.repeat(r.calificacion) + '☆'.repeat(5 - r.calificacion);
         card.innerHTML = `
-          <div class="d-flex justify-content-between mb-2">
+          <div class="review-card__header">
             <strong>${r.usuario?.username || 'Usuario'}</strong>
-            <span class="text-warning">${stars}</span>
+            <span class="review-card__rating">${stars}</span>
           </div>
-          <p class="mb-1">${r.comentario}</p>
-          <small class="text-muted">${fecha}</small>
+          <p>${r.comentario}</p>
+          <small>${fecha}</small>
         `;
         listaResenasDiv.appendChild(card);
       });
     } catch {
-      listaResenasDiv.innerHTML = '<p class="text-danger">Error al cargar reseñas.</p>';
+      listaResenasDiv.innerHTML = '<p class="reviews-error">Error al cargar reseñas.</p>';
     }
   }
 
